@@ -1,0 +1,30 @@
+{
+  "workspaces": [
+    "cli"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "prettify": "prettier --write --ignore-path .gitignore \"**/*.{css,html,js,json,md,yaml,yml}\"",
+    "prettier-check:updated": "pipe-git-updated --ext=css --ext=html --ext=js --ext=json --ext=md --ext=yaml --ext=yml --base=main -- prettier -c",
+    "lint:updated": "pipe-git-updated --ext=js --base=main -- eslint"
+  },
+  "author": "serverless.com",
+  "license": "MIT",
+  "devDependencies": {
+    "@serverless/eslint-config": "^4.0.0",
+    "eslint": "^8.14.0",
+    "eslint-plugin-import": "^2.26.0",
+    "git-list-updated": "^1.2.1",
+    "prettier": "^2.6.2"
+  },
+  "eslintConfig": {
+    "extends": "@serverless/eslint-config/node",
+    "root": true,
+    "ignorePatterns": [
+      "demo/*"
+    ]
+  },
+  "engines": {
+    "node": ">=12.12"
+  }
+}
