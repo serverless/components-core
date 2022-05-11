@@ -1,0 +1,7 @@
+{
+  "name": "@serverless-components/core",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "author": "serverless.com",
+  "license": "MIT"
+}
