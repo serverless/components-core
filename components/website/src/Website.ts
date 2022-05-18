@@ -6,6 +6,8 @@ import { exec } from 'child_process';
 import WebsiteConstruct from './WebsiteConstruct';
 import { WebsiteInput } from './Input';
 import S3Sync from './S3Sync';
+import {existsSync, statSync} from "fs-extra";
+import * as path from "path";
 
 export default class Website extends AwsComponent {
   constructor(id: string, context: ComponentContext, inputs: WebsiteInput) {
@@ -83,10 +85,15 @@ export default class Website extends AwsComponent {
   private async uploadWebsite(): Promise<number> {
     this.context.updateProgress('uploading assets');
 
+    const pathToSync = this.inputs.build?.outputDir ? path.join(this.inputs.path, this.inputs.build.outputDir) : this.inputs.path;
+    if (!existsSync(pathToSync) || !statSync(pathToSync).isDirectory()) {
+      throw new ServerlessError(`Cannot upload website: "${pathToSync}" is not a directory`, 'INVALID_WEBSITE_CONFIGURATION');
+    }
+
     const s3Sync = new S3Sync(await this.getSdkConfig(), this.context);
     const fileChangeCount = await s3Sync.s3Sync({
-      localPath: this.inputs.path,
       bucketName: this.context.outputs.bucketName,
+      localPath: pathToSync,
     });
     if (fileChangeCount > 0) {
       await this.clearCDNCache();
@@ -96,7 +103,7 @@ export default class Website extends AwsComponent {
   }
 
   private async build() {
-    const buildCommand = this.inputs.build?.run;
+    const buildCommand = this.inputs.build?.cmd;
     if (!buildCommand) {
       return;
     }
@@ -108,7 +115,7 @@ export default class Website extends AwsComponent {
       // exec() also runs in a shell by default, which is probably
       // what users expect
       const child = exec(buildCommand, {
-        cwd: this.inputs.build.cwd,
+        cwd: this.inputs.path,
         env: {
           ...process.env,
           ...(this.inputs.build.environment ?? {}),
