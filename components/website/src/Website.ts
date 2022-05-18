@@ -73,8 +73,11 @@ export default class Website extends AwsComponent {
     this.context.writeText(this.context.outputs.url);
   }
 
-  refreshOutputs(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async refreshOutputs(): Promise<void> {
+    this.context.startProgress('refreshing outputs')
+    const cdk = await this.getCdk();
+    await this.context.updateOutputs(await cdk.getStackOutputs());
+    this.context.successProgress('outputs refreshed');
   }
 
   private async uploadWebsite(): Promise<number> {
