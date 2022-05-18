@@ -1,8 +1,8 @@
 export type WebsiteInput = {
   path: string;
   build?: {
-    run: string;
-    cwd?: string;
+    cmd: string;
+    outputDir?: string;
     environment?: Record<string, string>;
   };
   region?: string;

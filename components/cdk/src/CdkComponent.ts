@@ -39,10 +39,10 @@ export default class CdkComponent extends AwsComponent {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ConstructClass = require(path.join(process.cwd(), this.inputs.construct));
     if (ConstructClass.prototype instanceof Stack) {
-      new ConstructClass(app, this.stackName, this.inputs);
+      new ConstructClass(app, this.stackName, this.inputs.props);
     } else {
       const stack = new Stack(app, this.stackName);
-      new ConstructClass(stack, 'Construct', this.inputs);
+      new ConstructClass(stack, 'Construct', this.inputs.props);
     }
     return app;
   }
