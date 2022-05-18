@@ -14,8 +14,7 @@ export default class CdkComponent extends AwsComponent {
       return;
     }
 
-    this.context.outputs = await cdk.getStackOutputs();
-    await this.context.save();
+    await this.context.updateOutputs(await cdk.getStackOutputs());
     this.context.successProgress('deployed');
   }
 
@@ -27,8 +26,8 @@ export default class CdkComponent extends AwsComponent {
     await cdk.remove(app);
 
     this.context.state = {};
-    this.context.outputs = {};
     await this.context.save();
+    await this.context.updateOutputs({});
 
     this.context.successProgress('removed');
   }

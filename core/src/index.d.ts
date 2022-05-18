@@ -24,6 +24,7 @@ export interface ComponentContext {
   state: Record<string, any>;
   outputs: Record<string, any>;
   save(): Promise<void>;
+  updateOutputs(outputs: Record<string, any>): Promise<void>;
   writeText(message: string, namespace?: string[]): void;
   logVerbose(message: string, namespace?: string[]): void;
   logError(error: string | Error, namespace?: string[]): void;
