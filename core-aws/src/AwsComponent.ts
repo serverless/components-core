@@ -1,4 +1,5 @@
 import { Component, ComponentContext } from '@serverless-components/core';
+import { getCredentialProvider,  } from '@serverless-components/utils-aws';
 import Cdk from './Cdk';
 
 export default abstract class AwsComponent extends Component {
@@ -26,6 +27,7 @@ export default abstract class AwsComponent extends Component {
     // @see https://github.com/aws/aws-cdk/blob/fa16f7a9c11981da75e44ffc83adcdc6edad94fc/packages/aws-cdk/lib/cli.ts#L257-L264
     return {
       region: this.region,
+      credentials: await getCredentialProvider(),
     };
   }
 }
