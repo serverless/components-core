@@ -4,6 +4,7 @@
     "core-aws",
     "components/*",
     "demo/*"
+    "utils-aws",
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
