@@ -6,8 +6,8 @@ import { exec } from 'child_process';
 import WebsiteConstruct from './WebsiteConstruct';
 import { WebsiteInput } from './Input';
 import S3Sync from './S3Sync';
-import {existsSync, statSync} from "fs-extra";
-import * as path from "path";
+import {existsSync, statSync} from 'fs-extra';
+import * as path from 'path';
 
 export default class Website extends AwsComponent {
   constructor(id: string, context: ComponentContext, inputs: WebsiteInput) {

@@ -6,7 +6,7 @@
     // Generate `.d.ts` files
     "declaration": true,
     // This is needed to that TS works with NPM workspaces
-    "moduleResolution": "node",
+    "moduleResolution": "node"
   },
   "include": ["src"]
 }
