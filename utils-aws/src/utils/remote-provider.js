@@ -1,3 +1,5 @@
+'use strict';
+
 // Below code is heavily based on https://github.com/aws/aws-sdk-js-v3/blob/95eb04e51699e408d645fbc290bc0f24d0639a6b/packages/credential-provider-node/src/remoteProvider.ts
 // With only minor changes and adjustments
 // License of the original code: https://github.com/aws/aws-sdk-js-v3/blob/95eb04e51699e408d645fbc290bc0f24d0639a6b/packages/credential-provider-node/LICENSE

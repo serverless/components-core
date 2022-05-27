@@ -3,5 +3,16 @@
   "version": "0.0.1",
   "main": "src/index.js",
   "author": "serverless.com",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-sts": "^3.100.0",
+    "@aws-sdk/credential-provider-env": "^3.78.0",
+    "@aws-sdk/credential-provider-imds": "^3.81.0",
+    "@aws-sdk/credential-provider-ini": "^3.100.0",
+    "@aws-sdk/credential-provider-process": "^3.80.0",
+    "@aws-sdk/credential-provider-sso": "^3.100.0",
+    "@aws-sdk/credential-provider-web-identity": "^3.78.0",
+    "@aws-sdk/property-provider": "^3.78.0",
+    "@aws-sdk/shared-ini-file-loader": "^3.80.0"
+  }
 }
