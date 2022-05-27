@@ -4,6 +4,7 @@ import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import * as childProcess from 'child_process';
 import { App } from 'aws-cdk-lib';
 import { ComponentContext } from '@serverless-components/core';
+import AsyncLock from 'async-lock';
 
 export default class Cdk {
   private readonly toolkitStackName = 'serverless-cdk-toolkit';
@@ -138,37 +139,64 @@ export default class Cdk {
   }
 
   /**
-   * @private
+   * @see https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html
    */
-  async bootstrapCdk() {
+  private async bootstrapCdk() {
     if (this.context.state.cdk?.cdkBootstrapped) {
-      this.context.logVerbose('The AWS CDK is already set up, moving on');
+      // The CDK is already set up
       return;
     }
 
     const accountId = await this.getAccountId();
-    this.context.logVerbose('Setting up the AWS CDK');
-    await this.execCdk([
-      'bootstrap',
-      `aws://${accountId}/${this.region}`,
-      /**
-       * We use a CDK toolkit stack dedicated to Serverless.
-       * The reason for this is:
-       * - to keep complete control over that stack
-       * - because there are multiple versions, we don't want to force
-       * one specific version on users
-       * (see https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html#bootstrapping-templates)
-       */
-      '--toolkit-stack-name',
-      this.toolkitStackName,
-      /**
-       * In the same spirit as the custom stack name, we must provide
-       * a different "qualifier": this ID will be used in CloudFormation
-       * exports to provide a unique export name.
-       */
-      '--qualifier',
-      'serverless',
-    ]);
+
+    /**
+     * We use a lock to make sure different components don't bootstrap the CDK in the
+     * same account/region in parallel. Indeed, if that happens, both components would
+     * be deploying the same CloudFormation stack, resulting in an error.
+     *
+     * The lock has to be global to the whole process: if different versions of this package
+     * are installed, we don't want one lock system to exist in each installed version.
+     * That's why we use `global` with a (hopefully) unique name.
+     *
+     * That also means WE MUST KEEP BC on what `global.componentsCdkBootstrapLock` contains
+     * because all versions of this package will use it.
+     *
+     * Note that this lock just guarantees sequential execution. The `cdk bootstrap` command will
+     * still be run multiple times (sequentially) for the same account/region, which is
+     * inefficient. BUT `cdk bootstrap` on an already bootstrapped account only takes 2.5s, so
+     * we will consider the overhead negligible for now.
+     */
+    if (!global.componentsCdkBootstrapLock) {
+      global.componentsCdkBootstrapLock = new AsyncLock();
+    }
+    // We lock parallel bootstrapping per "CDK environment" (account ID + region)
+    // so that bootstrapping different environments happens in parallel
+    const lockKey = `@serverless-components/aws/cdk-boostrap/${accountId}/${this.region}`;
+
+    await global.componentsCdkBootstrapLock.acquire(lockKey, async () => {
+      this.context.logVerbose(`Bootstrapping the AWS CDK in "aws://${accountId}/${this.region}"`);
+      await this.execCdk([
+        'bootstrap',
+        `aws://${accountId}/${this.region}`,
+        /**
+         * We use a CDK toolkit stack dedicated to Serverless.
+         * The reason for this is:
+         * - to keep complete control over that stack
+         * - because there are multiple versions, we don't want to force
+         *   one specific version on users
+         * (see https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html#bootstrapping-templates)
+         */
+        '--toolkit-stack-name',
+        this.toolkitStackName,
+        /**
+         * In the same spirit as the custom stack name, we must provide
+         * a different "qualifier": this ID will be used in CloudFormation
+         * exports to provide a unique export name.
+         */
+        '--qualifier',
+        'serverless',
+      ]);
+    });
 
     if (this.context.state.cdk === undefined) {
       this.context.state.cdk = {};

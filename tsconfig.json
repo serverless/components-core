@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
+    "esModuleInterop": true,
     "sourceMap": true,
     "allowJs": true,
     // Type checking for JS files too
