@@ -35,38 +35,38 @@ export default class S3Sync {
     targetPathPrefix?: string;
     bucketName: string;
   }): Promise<number> {
-    let fileChangeCount = 0;
+    let filesUploaded = 0;
+    let filesSkipped = 0;
+
     const filesToUpload: string[] = await this.listFilesRecursively(localPath);
     const existingS3Objects = await this.s3ListAll(bucketName, targetPathPrefix);
 
+    const uploadFile = async (file) => {
+      const targetKey =
+        targetPathPrefix !== undefined ? path.posix.join(targetPathPrefix, file) : file;
+      const fileContent = fs.readFileSync(path.posix.join(localPath, file));
+
+      // Check that the file isn't already uploaded
+      if (targetKey in existingS3Objects) {
+        const existingObject = existingS3Objects[targetKey];
+        const etag = this.computeS3ETag(fileContent);
+        if (etag === existingObject.ETag) {
+          filesSkipped++;
+          return;
+        }
+      }
+
+      this.context.logVerbose(`Uploading ${file}`);
+      await this.s3Put(bucketName, targetKey, fileContent);
+      filesUploaded++;
+    };
+
     // Upload files by chunks
-    let skippedFiles = 0;
     for (const batch of chunk(filesToUpload, 2)) {
-      await Promise.all(
-        batch.map(async (file) => {
-          const targetKey =
-            targetPathPrefix !== undefined ? path.posix.join(targetPathPrefix, file) : file;
-          const fileContent = fs.readFileSync(path.posix.join(localPath, file));
-
-          // Check that the file isn't already uploaded
-          if (targetKey in existingS3Objects) {
-            const existingObject = existingS3Objects[targetKey];
-            const etag = this.computeS3ETag(fileContent);
-            if (etag === existingObject.ETag) {
-              skippedFiles++;
-
-              return;
-            }
-          }
-
-          this.context.logVerbose(`Uploading ${file}`);
-          await this.s3Put(bucketName, targetKey, fileContent);
-          fileChangeCount++;
-        })
-      );
+      await Promise.all(batch.map(uploadFile));
     }
-    if (skippedFiles > 0) {
-      this.context.logVerbose(`Skipped uploading ${skippedFiles} unchanged files`);
+    if (filesSkipped > 0) {
+      this.context.logVerbose(`Skipped uploading ${filesSkipped} unchanged files`);
     }
 
     const targetKeys = filesToUpload.map((file) => {
@@ -76,12 +76,12 @@ export default class S3Sync {
     if (keysToDelete.length > 0) {
       keysToDelete.forEach((key) => {
         this.context.logVerbose(`Deleting ${key}`);
-        fileChangeCount++;
+        filesUploaded++;
       });
       await this.s3Delete(bucketName, keysToDelete);
     }
 
-    return fileChangeCount;
+    return filesUploaded;
   }
 
   async emptyBucket(bucketName: string) {
