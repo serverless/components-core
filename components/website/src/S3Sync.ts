@@ -1,6 +1,5 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as crypto from 'crypto';
 import { lookup } from 'mime-types';
 import { chunk, flatten } from 'lodash';
 import {
@@ -12,6 +11,7 @@ import {
   S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import { ComponentContext, ServerlessError } from '@serverless-components/core';
+import computeS3ETag from './s3-etag';
 
 type S3Objects = Record<string, _Object>;
 
@@ -49,7 +49,7 @@ export default class S3Sync {
       // Check that the file isn't already uploaded
       if (targetKey in existingS3Objects) {
         const existingObject = existingS3Objects[targetKey];
-        const etag = this.computeS3ETag(fileContent);
+        const etag = computeS3ETag(fileContent);
         if (etag === existingObject.ETag) {
           filesSkipped++;
           return;
@@ -181,9 +181,5 @@ export default class S3Sync {
         'S3_DELETE_OBJECTS_FAILURE'
       );
     }
-  }
-
-  private computeS3ETag(fileContent: Buffer): string {
-    return `"${crypto.createHash('md5').update(fileContent).digest('hex')}"`;
   }
 }
