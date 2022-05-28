@@ -1,0 +1,233 @@
+{
+  "Resources": {
+    "Bucket83908E77": {
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "BucketPolicyE9A3008A": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Bucket83908E77"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Principal": {
+                "CanonicalUser": {
+                  "Fn::GetAtt": ["CDNOrigin1S3Origin14654519", "S3CanonicalUserId"]
+                }
+              },
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": ["Bucket83908E77", "Arn"]
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "RequestFunction0B9B463A": {
+      "Type": "AWS::CloudFront::Function",
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              "id-dev-",
+              {
+                "Ref": "AWS::Region"
+              },
+              "-id-dev-request"
+            ]
+          ]
+        },
+        "AutoPublish": true,
+        "FunctionCode": "var REDIRECT_REGEX = /^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|xml)$)([^.]+$)/;\n\nfunction handler(event) {\n    var uri = event.request.uri;\n    var request = event.request;\n    var isUriToRedirect = REDIRECT_REGEX.test(uri);\n\n    if (isUriToRedirect) {\n        request.uri = \"/index.html\";\n    }\n\n    return event.request;\n}",
+        "FunctionConfig": {
+          "Comment": {
+            "Fn::Join": [
+              "",
+              [
+                "id-dev-",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "-id-dev-request"
+              ]
+            ]
+          },
+          "Runtime": "cloudfront-js-1.0"
+        }
+      }
+    },
+    "ResponseFunctionB78A69CA": {
+      "Type": "AWS::CloudFront::Function",
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              "id-dev-",
+              {
+                "Ref": "AWS::Region"
+              },
+              "-id-dev-response"
+            ]
+          ]
+        },
+        "AutoPublish": true,
+        "FunctionCode": "function handler(event) {\n    var response = event.response;\n    response.headers = Object.assign({}, {\n    \"x-frame-options\": {\n        \"value\": \"SAMEORIGIN\"\n    },\n    \"x-content-type-options\": {\n        \"value\": \"nosniff\"\n    },\n    \"x-xss-protection\": {\n        \"value\": \"1; mode=block\"\n    },\n    \"strict-transport-security\": {\n        \"value\": \"max-age=63072000\"\n    }\n}, response.headers);\n    return response;\n}",
+        "FunctionConfig": {
+          "Comment": {
+            "Fn::Join": [
+              "",
+              [
+                "id-dev-",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "-id-dev-response"
+              ]
+            ]
+          },
+          "Runtime": "cloudfront-js-1.0"
+        }
+      }
+    },
+    "CDNOrigin1S3Origin14654519": {
+      "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+      "Properties": {
+        "CloudFrontOriginAccessIdentityConfig": {
+          "Comment": "Identity for iddevCDNOrigin17CD5C30D"
+        }
+      }
+    },
+    "CDN2330F4C0": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Aliases": ["example.com"],
+          "Comment": "id-dev id-dev website CDN",
+          "DefaultCacheBehavior": {
+            "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "Compress": true,
+            "FunctionAssociations": [
+              {
+                "EventType": "viewer-request",
+                "FunctionARN": {
+                  "Fn::GetAtt": ["RequestFunction0B9B463A", "FunctionARN"]
+                }
+              },
+              {
+                "EventType": "viewer-response",
+                "FunctionARN": {
+                  "Fn::GetAtt": ["ResponseFunctionB78A69CA", "FunctionARN"]
+                }
+              }
+            ],
+            "TargetOriginId": "iddevCDNOrigin17CD5C30D",
+            "ViewerProtocolPolicy": "redirect-to-https"
+          },
+          "Enabled": true,
+          "HttpVersion": "http2",
+          "IPV6Enabled": true,
+          "Origins": [
+            {
+              "DomainName": {
+                "Fn::GetAtt": ["Bucket83908E77", "RegionalDomainName"]
+              },
+              "Id": "iddevCDNOrigin17CD5C30D",
+              "S3OriginConfig": {
+                "OriginAccessIdentity": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "origin-access-identity/cloudfront/",
+                      {
+                        "Ref": "CDNOrigin1S3Origin14654519"
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "ViewerCertificate": {
+            "AcmCertificateArn": "arn:aws:acm:us-east-1:123456615250:certificate/0a28e63d-d3a9-4578-9f8b-14347bfe8123",
+            "MinimumProtocolVersion": "TLSv1.2_2021",
+            "SslSupportMethod": "sni-only"
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "bucketName": {
+      "Description": "Name of the bucket that stores the static website.",
+      "Value": {
+        "Ref": "Bucket83908E77"
+      }
+    },
+    "domain": {
+      "Description": "Website domain name.",
+      "Value": "example.com"
+    },
+    "url": {
+      "Description": "Website URL.",
+      "Value": "https://example.com"
+    },
+    "cname": {
+      "Description": "CloudFront CNAME.",
+      "Value": {
+        "Fn::GetAtt": ["CDN2330F4C0", "DomainName"]
+      }
+    },
+    "distributionId": {
+      "Description": "ID of the CloudFront distribution.",
+      "Value": {
+        "Ref": "CDN2330F4C0"
+      }
+    }
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+    }
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  ["1", "2", "3", "4", "5"],
+                  {
+                    "Ref": "BootstrapVersion"
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+        }
+      ]
+    }
+  }
+}

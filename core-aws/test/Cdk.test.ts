@@ -7,7 +7,7 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Cdk } from '../src';
-import FakeComponentContext from './FakeComponentContext';
+import FakeComponentContext from '../src/test-utils/FakeComponentContext';
 
 const stsMock = mockClient(STSClient);
 
