@@ -4,12 +4,14 @@ import { ComponentContext, ServerlessError } from '@serverless-components/core';
 import { AwsComponent } from '@serverless-components/core-aws';
 import { exec } from 'child_process';
 import WebsiteConstruct from './WebsiteConstruct';
-import { WebsiteInput } from './Input';
+import { WebsiteSchema, WebsiteInput } from './Input';
 import S3Sync from './S3Sync';
-import {existsSync, statSync} from 'fs-extra';
+import { existsSync, statSync } from 'fs-extra';
 import * as path from 'path';
 
 export default class Website extends AwsComponent {
+  static SCHEMA = WebsiteSchema;
+
   constructor(id: string, context: ComponentContext, inputs: WebsiteInput) {
     super(id, context, inputs);
 
@@ -76,7 +78,7 @@ export default class Website extends AwsComponent {
   }
 
   async refreshOutputs(): Promise<void> {
-    this.context.startProgress('refreshing outputs')
+    this.context.startProgress('refreshing outputs');
     const cdk = await this.getCdk();
     await this.context.updateOutputs(await cdk.getStackOutputs());
     this.context.successProgress('outputs refreshed');
@@ -85,9 +87,14 @@ export default class Website extends AwsComponent {
   private async uploadWebsite(): Promise<number> {
     this.context.updateProgress('uploading assets');
 
-    const pathToSync = this.inputs.build?.outputDir ? path.join(this.inputs.path, this.inputs.build.outputDir) : this.inputs.path;
+    const pathToSync = this.inputs.build?.outputDir
+      ? path.join(this.inputs.path, this.inputs.build.outputDir)
+      : this.inputs.path;
     if (!existsSync(pathToSync) || !statSync(pathToSync).isDirectory()) {
-      throw new ServerlessError(`Cannot upload website: "${pathToSync}" is not a directory`, 'INVALID_WEBSITE_CONFIGURATION');
+      throw new ServerlessError(
+        `Cannot upload website: "${pathToSync}" is not a directory`,
+        'INVALID_WEBSITE_CONFIGURATION'
+      );
     }
 
     const s3Sync = new S3Sync(await this.getSdkConfig(), this.context);
