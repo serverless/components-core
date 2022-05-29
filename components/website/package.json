@@ -18,6 +18,7 @@
     "aws-cdk-lib": "^2.22.0",
     "constructs": "^10.0.77",
     "fs-extra": "^10.1.0",
+    "json-schema-to-ts": "^2.5.2",
     "lodash": "^4.17.21",
     "mime-types": "^2.1.35"
   },
