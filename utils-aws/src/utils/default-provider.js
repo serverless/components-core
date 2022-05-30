@@ -51,6 +51,7 @@ async function defaultProvider(init) {
   return memoize(
     chain(
       // Change the logic to not skip `fromEnv` when process.env.AWS_PROFILE is present
+      // The change was introduced in order to follow the same resolution logic as SDK v2, AWS CLI and AWS CDK
       // Previous line:
       // ...(init.profile || process.env[ENV_PROFILE] ? [] : [fromEnv()]),
       ...(init.profile ? [] : [fromEnv()]),
