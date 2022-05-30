@@ -5,6 +5,7 @@ import * as childProcess from 'child_process';
 import { App } from 'aws-cdk-lib';
 import { ComponentContext } from '@serverless-components/core';
 import AsyncLock from 'async-lock';
+import uniGlobal from 'uni-global';
 
 export default class Cdk {
   private readonly toolkitStackName = 'serverless-cdk-toolkit';
@@ -156,9 +157,9 @@ export default class Cdk {
      *
      * The lock has to be global to the whole process: if different versions of this package
      * are installed, we don't want one lock system to exist in each installed version.
-     * That's why we use `global` with a (hopefully) unique name.
+     * That's why we use the 'uni-global' package, which behaves like `global` but cleaner.
      *
-     * That also means WE MUST KEEP BC on what `global.componentsCdkBootstrapLock` contains
+     * That also means WE MUST KEEP BC on what `globalContext.cdkBootstrapLock` contains
      * because all versions of this package will use it.
      *
      * Note that this lock just guarantees sequential execution. The `cdk bootstrap` command will
@@ -166,14 +167,15 @@ export default class Cdk {
      * inefficient. BUT `cdk bootstrap` on an already bootstrapped account only takes 2.5s, so
      * we will consider the overhead negligible for now.
      */
-    if (!global.componentsCdkBootstrapLock) {
-      global.componentsCdkBootstrapLock = new AsyncLock();
+    const globalContext = uniGlobal('@serverless-components/core-aws');
+    if (!globalContext.cdkBootstrapLock) {
+      globalContext.cdkBootstrapLock = new AsyncLock();
     }
     // We lock parallel bootstrapping per "CDK environment" (account ID + region)
     // so that bootstrapping different environments happens in parallel
     const lockKey = `@serverless-components/aws/cdk-boostrap/${accountId}/${this.region}`;
 
-    await global.componentsCdkBootstrapLock.acquire(lockKey, async () => {
+    await globalContext.cdkBootstrapLock.acquire(lockKey, async () => {
       this.context.logVerbose(`Bootstrapping the AWS CDK in "aws://${accountId}/${this.region}"`);
       await this.execCdk([
         'bootstrap',
