@@ -85,7 +85,7 @@ function mockCdk(
     child_process: { spawn: spawnStub },
   }).default;
 
-  const cdk = new MockedCdk(componentContext, 'stack-name', 'us-east-1', {
+  const cdk = new MockedCdk(componentContext, 'stack-name', {
     region: 'us-east-1',
   }) as Cdk;
 

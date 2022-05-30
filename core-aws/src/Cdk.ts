@@ -14,7 +14,6 @@ export default class Cdk {
   constructor(
     private readonly context: ComponentContext,
     private readonly stackName: string,
-    private readonly region: string,
     private readonly sdkConfig: { region: string }
   ) {
     this.artifactDirectory = `.serverless/${this.stackName}`;
@@ -100,9 +99,7 @@ export default class Cdk {
   }
 
   async getAccountId(): Promise<string> {
-    const sts = new STSClient({
-      region: this.region,
-    });
+    const sts = new STSClient(this.sdkConfig);
     const accountId = (await sts.send(new GetCallerIdentityCommand({}))).Account;
     if (accountId === undefined) {
       throw new Error('No AWS account ID could be found via the AWS credentials');
@@ -149,7 +146,6 @@ export default class Cdk {
     }
 
     const accountId = await this.getAccountId();
-
     /**
      * We use a lock to make sure different components don't bootstrap the CDK in the
      * same account/region in parallel. Indeed, if that happens, both components would
@@ -179,7 +175,7 @@ export default class Cdk {
       this.context.logVerbose(`Bootstrapping the AWS CDK in "aws://${accountId}/${this.region}"`);
       await this.execCdk([
         'bootstrap',
-        `aws://${accountId}/${this.region}`,
+        `aws://${accountId}/${this.sdkConfig.region}`,
         /**
          * We use a CDK toolkit stack dedicated to Serverless.
          * The reason for this is:
