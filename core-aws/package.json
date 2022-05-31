@@ -24,6 +24,7 @@
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/sinon-chai": "^3.2.8",
+    "aws-sdk-client-mock": "^0.6.2",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
     "proxyquire": "^2.1.3",
