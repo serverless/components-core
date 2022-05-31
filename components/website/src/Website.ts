@@ -3,11 +3,11 @@ import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-clo
 import { ComponentContext, ServerlessError } from '@serverless-components/core';
 import { AwsComponent } from '@serverless-components/core-aws';
 import { exec } from 'child_process';
+import { existsSync, statSync } from 'fs-extra';
+import * as path from 'path';
 import WebsiteConstruct from './WebsiteConstruct';
 import { WebsiteSchema, WebsiteInput } from './Input';
 import S3Sync from './S3Sync';
-import { existsSync, statSync } from 'fs-extra';
-import * as path from 'path';
 
 export default class Website extends AwsComponent {
   static SCHEMA = WebsiteSchema;
