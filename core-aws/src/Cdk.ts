@@ -169,10 +169,12 @@ export default class Cdk {
     }
     // We lock parallel bootstrapping per "CDK environment" (account ID + region)
     // so that bootstrapping different environments happens in parallel
-    const lockKey = `@serverless-components/aws/cdk-boostrap/${accountId}/${this.region}`;
+    const lockKey = `@serverless-components/aws/cdk-boostrap/${accountId}/${this.sdkConfig.region}`;
 
     await globalContext.cdkBootstrapLock.acquire(lockKey, async () => {
-      this.context.logVerbose(`Bootstrapping the AWS CDK in "aws://${accountId}/${this.region}"`);
+      this.context.logVerbose(
+        `Bootstrapping the AWS CDK in "aws://${accountId}/${this.sdkConfig.region}"`
+      );
       await this.execCdk([
         'bootstrap',
         `aws://${accountId}/${this.sdkConfig.region}`,
