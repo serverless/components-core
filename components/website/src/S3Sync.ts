@@ -173,9 +173,11 @@ export default class S3Sync {
     // S3 deleteObjects operation will fail silently
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
     if (response.Errors !== undefined && response.Errors.length !== 0) {
-      response.Errors.forEach((error) => console.log(error));
+      response.Errors.forEach((error) =>
+        this.context.logVerbose(`S3 error: ${error.Key} ${error.Message}`)
+      );
       throw new ServerlessError(
-        'Unable to delete some files in S3. The "static-website" and "server-side-website" construct require the s3:DeleteObject IAM permissions to synchronize files to S3, is it missing from your deployment policy?',
+        'Unable to delete some files in S3. The "s3:DeleteObject" IAM permissions is required to synchronize files to S3, is it missing from your IAM permissions?',
         'S3_DELETE_OBJECTS_FAILURE'
       );
     }
