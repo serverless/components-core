@@ -57,6 +57,8 @@ jobs:
         run: npm run prettier-check:updated
       - name: Validate lint rules
         run: npm run lint:updated
+      - name: Build
+        run: npm run build
       - name: Unit tests
         run: npm test
 
@@ -92,6 +94,8 @@ jobs:
         run: |
           npm update --no-save
           npm update --save-dev --no-save
+      - name: Build
+        run: npm run build
       - name: Unit tests
         run: npm test
 
@@ -127,6 +131,8 @@ jobs:
         run: |
           npm update --no-save
           npm update --save-dev --no-save
+      - name: Build
+        run: npm run build
       - name: Unit tests
         run: npm test
 
@@ -162,5 +168,7 @@ jobs:
         run: |
           npm update --no-save
           npm update --save-dev --no-save
+      - name: Build
+        run: npm run build
       - name: Unit tests
         run: npm test
