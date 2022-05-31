@@ -216,9 +216,13 @@ export default class Cdk {
   }
 
   private async execCdk(args: string[]): Promise<{ stdout: string; stderr: string }> {
+    const node = process.execPath;
+    // We want to run the CDK CLI we have in node_modules because we control its version
+    const cdkCliPath = require.resolve('aws-cdk/bin/cdk');
+
     this.context.logVerbose(`Running "cdk ${args.join(' ')}"`);
     return new Promise((resolve, reject) => {
-      const child = childProcess.spawn('cdk', args, {
+      const child = childProcess.spawn(node, [cdkCliPath, ...args], {
         env: {
           ...process.env,
           CDK_DISABLE_VERSION_CHECK: '1',
