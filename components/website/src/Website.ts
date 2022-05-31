@@ -1,6 +1,6 @@
 import { App } from 'aws-cdk-lib';
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
-import { ComponentContext, ServerlessError } from '@serverless-components/core';
+import { Component, ComponentContext, ServerlessError } from '@serverless-components/core';
 import { AwsComponent } from '@serverless-components/core-aws';
 import { exec } from 'child_process';
 import { existsSync, statSync } from 'fs-extra';
@@ -9,15 +9,19 @@ import WebsiteConstruct from './WebsiteConstruct';
 import { WebsiteSchema, WebsiteInput } from './Input';
 import S3Sync from './S3Sync';
 
-export default class Website extends AwsComponent {
+export default class Website extends AwsComponent implements Component {
   static SCHEMA = WebsiteSchema;
 
-  constructor(id: string, context: ComponentContext, inputs: WebsiteInput) {
+  constructor(
+    id: string,
+    private readonly context: ComponentContext,
+    private readonly inputs: WebsiteInput
+  ) {
     super(id, context, inputs);
 
     if (inputs.domain !== undefined && inputs.certificate === undefined) {
       throw new ServerlessError(
-        `Invalid configuration for website '${this.id}': if a domain is configured, then a certificate ARN must be configured in the 'certificate' option`,
+        `Invalid configuration for website '${id}': if a domain is configured, then a certificate ARN must be configured in the 'certificate' option`,
         'INVALID_WEBSITE_CONFIGURATION'
       );
     }
@@ -125,7 +129,7 @@ export default class Website extends AwsComponent {
         cwd: this.inputs.path,
         env: {
           ...process.env,
-          ...(this.inputs.build.environment ?? {}),
+          ...(this.inputs.build?.environment ?? {}),
         },
       });
       if (child.stdout) {

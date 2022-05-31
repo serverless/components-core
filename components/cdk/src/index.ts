@@ -1,3 +1,3 @@
-import Website from './CdkComponent';
+import CdkComponent from './CdkComponent';
 
-module.exports = Website;
+module.exports = CdkComponent;
