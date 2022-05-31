@@ -1,23 +1,16 @@
-export declare abstract class Component {
-  static commands?: Record<
-    string,
-    {
-      handler: (options: Record<string, any>) => Promise<void> | void;
-    }
-  >;
-
-  id: string;
-  context: ComponentContext;
-  inputs: Record<string, any>;
-
-  protected constructor(id: string, context: ComponentContext, inputs: Record<string, any>);
-
-  abstract deploy(): Promise<void> | void;
-  abstract remove(): Promise<void> | void;
-  abstract info(): Promise<void> | void;
-  abstract refreshOutputs(): Promise<void> | void;
+export interface Component {
+  deploy(): Promise<void> | void;
+  remove(): Promise<void> | void;
+  info(): Promise<void> | void;
+  refreshOutputs(): Promise<void> | void;
   logs?(): Promise<void> | void;
 }
+
+export type ComponentCommands = {
+  [key: string]: {
+    handler: (options: Record<string, any>) => Promise<void> | void;
+  };
+};
 
 export interface ComponentContext {
   readonly stage: string;

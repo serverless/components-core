@@ -1,7 +1,5 @@
 'use strict';
 
-const Component = require('./Component');
-
 class ServerlessError extends Error {
   constructor(message, code) {
     super(message);
@@ -10,6 +8,5 @@ class ServerlessError extends Error {
 }
 
 module.exports = {
-  Component,
   ServerlessError,
 };

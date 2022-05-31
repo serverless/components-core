@@ -1,8 +1,18 @@
 import { App, Stack } from 'aws-cdk-lib';
 import { AwsComponent } from '@serverless-components/core-aws';
 import * as path from 'path';
+import { ComponentContext } from '@serverless-components/core';
+import { CdkComponentInput } from './Input';
 
 export default class CdkComponent extends AwsComponent {
+  constructor(
+    id: string,
+    private readonly context: ComponentContext,
+    private readonly inputs: CdkComponentInput
+  ) {
+    super(id, context, inputs);
+  }
+
   async deploy() {
     this.context.startProgress('deploying');
 
