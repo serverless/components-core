@@ -24,8 +24,7 @@ describe('Cdk', () => {
     await cdk.deploy(app);
 
     expect(spawnStub.callCount).to.be.greaterThanOrEqual(1);
-    expect(spawnStub.getCall(0).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(0).args[1][0]).to.equal('bootstrap');
+    expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');
   });
 
   it('does not bootstraps twice', async () => {
@@ -41,12 +40,9 @@ describe('Cdk', () => {
     await cdk.deploy(app2);
 
     expect(spawnStub.callCount).to.equal(3);
-    expect(spawnStub.getCall(0).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(0).args[1][0]).to.equal('bootstrap');
-    expect(spawnStub.getCall(1).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(1).args[1][0]).to.equal('deploy');
-    expect(spawnStub.getCall(2).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(2).args[1][0]).to.equal('deploy');
+    expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');
+    expect(spawnStub.getCall(1).args[1][1]).to.equal('deploy');
+    expect(spawnStub.getCall(2).args[1][1]).to.equal('deploy');
   });
 
   it('does not bootstrap the AWS CDK in parallel to avoid race conditions', async () => {
@@ -80,11 +76,9 @@ describe('Cdk', () => {
     expect(raceCondition).to.be.equal(false);
     // Also make sure that both components actually ran `cdk bootstrap`
     expect(spawnStubA.callCount).to.be.greaterThanOrEqual(1);
-    expect(spawnStubA.getCall(0).args[0]).to.equal('cdk');
-    expect(spawnStubA.getCall(0).args[1][0]).to.equal('bootstrap');
+    expect(spawnStubA.getCall(0).args[1][1]).to.equal('bootstrap');
     expect(spawnStubB.callCount).to.be.greaterThanOrEqual(1);
-    expect(spawnStubB.getCall(0).args[0]).to.equal('cdk');
-    expect(spawnStubB.getCall(0).args[1][0]).to.equal('bootstrap');
+    expect(spawnStubB.getCall(0).args[1][1]).to.equal('bootstrap');
   });
 
   it('skips deploying unchanged stacks', async () => {
@@ -99,10 +93,8 @@ describe('Cdk', () => {
     await cdk.deploy(app2);
 
     expect(spawnStub.callCount).to.equal(2);
-    expect(spawnStub.getCall(0).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(0).args[1][0]).to.equal('bootstrap');
-    expect(spawnStub.getCall(1).args[0]).to.equal('cdk');
-    expect(spawnStub.getCall(1).args[1][0]).to.equal('deploy');
+    expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');
+    expect(spawnStub.getCall(1).args[1][1]).to.equal('deploy');
   });
 });
 
