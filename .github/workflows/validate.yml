@@ -35,7 +35,7 @@ jobs:
           path: |
             ~/.npm
             node_modules
-          key: npm-v14-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+          key: npm-v14-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/package.json') }}
           restore-keys: |
             npm-v14-${{ runner.os }}-${{ github.ref }}-
             npm-v14-${{ runner.os }}-refs/heads/main-
@@ -76,7 +76,7 @@ jobs:
           path: |
             ~/.npm
             node_modules
-          key: npm-v14-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+          key: npm-v14-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/package.json') }}
           restore-keys: |
             npm-v14-${{ runner.os }}-${{ github.ref }}-
             npm-v14-${{ runner.os }}-refs/heads/main-
@@ -113,7 +113,7 @@ jobs:
           path: |
             ~/.npm
             node_modules
-          key: npm-v16-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+          key: npm-v16-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/package.json') }}
           restore-keys: |
             npm-v16-${{ runner.os }}-${{ github.ref }}-
             npm-v16-${{ runner.os }}-refs/heads/main-
@@ -150,7 +150,7 @@ jobs:
           path: |
             ~/.npm
             node_modules
-          key: npm-v12-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+          key: npm-v12-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/package.json') }}
           restore-keys: |
             npm-v12-${{ runner.os }}-${{ github.ref }}-
             npm-v12-${{ runner.os }}-refs/heads/main-
