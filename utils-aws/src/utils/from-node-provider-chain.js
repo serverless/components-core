@@ -33,7 +33,7 @@ const defaultProvider = require('./default-provider');
  * })
  * ```
  */
-async function fromNodeProviderChain(init) {
+function fromNodeProviderChain(init) {
   // We needed to swap the `defaultProvider` implementation for the one that was adjusted by us in `./default-provider`
   return defaultProvider({
     ...init,
