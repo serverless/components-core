@@ -16,7 +16,7 @@ const {
 const ENV_IMDS_DISABLED = 'AWS_EC2_METADATA_DISABLED';
 
 // We needed to copy it as-is as it is internal logic of `@aws-sdk/credential-provider-node` package
-async function remoteProvider(init) {
+function remoteProvider(init) {
   if (process.env[ENV_CMDS_RELATIVE_URI] || process.env[ENV_CMDS_FULL_URI]) {
     return fromContainerMetadata(init);
   }

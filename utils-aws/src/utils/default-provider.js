@@ -47,7 +47,7 @@ const remoteProvider = require('./remote-provider');
  * @see {@link fromContainerMetadata}   The function used to source credentials from the
  *                              ECS Container Metadata Service
  */
-async function defaultProvider(init) {
+function defaultProvider(init) {
   return memoize(
     chain(
       // Change the logic to not skip `fromEnv` when process.env.AWS_PROFILE is present
