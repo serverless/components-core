@@ -1,6 +1,6 @@
 {
   "name": "@serverless-components/cdk",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "author": "serverless.com",
   "license": "MIT",
@@ -9,10 +9,10 @@
     "build-fast": "esbuild-node-tsc"
   },
   "peerDependencies": {
-    "@serverless-components/core": "^0.0.1"
+    "@serverless-components/core": "^0.1.0"
   },
   "dependencies": {
-    "@serverless-components/core-aws": "^0.0.2",
+    "@serverless-components/core-aws": "^0.1.0",
     "aws-cdk-lib": "^2.22.0"
   }
 }
