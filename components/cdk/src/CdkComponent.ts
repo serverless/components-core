@@ -17,8 +17,7 @@ export default class CdkComponent extends AwsComponent {
     this.context.startProgress('deploying');
 
     const cdk = await this.getCdk();
-    const app = this.createApp(cdk.artifactDirectory);
-    const hasChanges = await cdk.deploy(app);
+    const hasChanges = await cdk.deploy((app: App) => this.initApp(app));
     if (!hasChanges) {
       this.context.successProgress('no changes');
       return;
@@ -32,8 +31,7 @@ export default class CdkComponent extends AwsComponent {
     this.context.startProgress('removing');
 
     const cdk = await this.getCdk();
-    const app = this.createApp(cdk.artifactDirectory);
-    await cdk.remove(app);
+    await cdk.remove((app: App) => this.initApp(app));
 
     this.context.state = {};
     await this.context.save();
@@ -42,10 +40,15 @@ export default class CdkComponent extends AwsComponent {
     this.context.successProgress('removed');
   }
 
-  private createApp(artifactDirectory: string): App {
-    const app = new App({
-      outdir: artifactDirectory,
-    });
+  info() {
+    // TODO
+  }
+
+  refreshOutputs(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  private initApp(app: App): void {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ConstructClass = require(path.join(process.cwd(), this.inputs.construct));
     if (ConstructClass.prototype instanceof Stack) {
@@ -54,14 +57,5 @@ export default class CdkComponent extends AwsComponent {
       const stack = new Stack(app, this.stackName);
       new ConstructClass(stack, 'Construct', this.inputs.props);
     }
-    return app;
-  }
-
-  info() {
-    // TODO
-  }
-
-  refreshOutputs(): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 }

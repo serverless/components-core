@@ -10,7 +10,6 @@ type CloudFormationTemplate = {
 };
 
 export default class FakeCdk extends Cdk {
-  public readonly artifactDirectory: string;
   private readonly outputs: Record<string, string>;
 
   constructor(artifactDirectory: string, outputs: Record<string, string> = {}) {
@@ -26,7 +25,11 @@ export default class FakeCdk extends Cdk {
    * In tests, the deployment will simply compile the CloudFormation template
    * so that we can assert against it.
    */
-  async deploy(app: App): Promise<boolean> {
+  async deploy(appInit: (app: App) => void): Promise<boolean> {
+    const app = new App({
+      outdir: this.artifactDirectory,
+    });
+    appInit(app);
     app.synth();
     return true;
   }

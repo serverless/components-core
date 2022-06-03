@@ -36,12 +36,9 @@ export default class Website extends AwsComponent implements Component {
 
     const cdk = await this.getCdk();
 
-    const app = new App({
-      outdir: cdk.artifactDirectory,
+    const hasInfrastructureChanges = await cdk.deploy((app: App) => {
+      new WebsiteConstruct(app, this.stackName, this.inputs as WebsiteInput);
     });
-    new WebsiteConstruct(app, this.stackName, this.inputs as WebsiteInput);
-
-    const hasInfrastructureChanges = await cdk.deploy(app);
 
     if (hasInfrastructureChanges) {
       await this.context.updateOutputs(await cdk.getStackOutputs());
@@ -59,16 +56,15 @@ export default class Website extends AwsComponent implements Component {
   async remove() {
     this.context.startProgress('removing');
 
-    const app = new App();
-    new WebsiteConstruct(app, this.stackName, this.inputs as WebsiteInput);
-
     if (this.context.outputs.bucketName) {
       const s3Sync = new S3Sync(await this.getSdkConfig(), this.context);
       await s3Sync.emptyBucket(this.context.outputs.bucketName);
     }
 
     const cdk = await this.getCdk();
-    await cdk.remove(app);
+    await cdk.remove((app: App) => {
+      new WebsiteConstruct(app, this.stackName, this.inputs as WebsiteInput);
+    });
 
     this.context.state = {};
     await this.context.save();
