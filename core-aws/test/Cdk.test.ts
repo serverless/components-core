@@ -1,7 +1,7 @@
 import { ComponentContext } from '@serverless-components/core';
 import proxyquire from 'proxyquire';
 import { SinonStub, stub } from 'sinon';
-import { App, Stack } from 'aws-cdk-lib';
+import { Stack } from 'aws-cdk-lib';
 import { expect } from 'chai';
 import { mockClient } from 'aws-sdk-client-mock';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
@@ -19,9 +19,7 @@ describe('Cdk', () => {
   it('bootstraps the AWS CDK automatically', async () => {
     const [cdk, spawnStub] = mockCdk(new FakeComponentContext());
 
-    const app = new App();
-    new Stack(app, 'stack-name');
-    await cdk.deploy(app);
+    await cdk.deploy((app) => new Stack(app, 'stack-name'));
 
     expect(spawnStub.callCount).to.be.greaterThanOrEqual(1);
     expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');
@@ -30,14 +28,14 @@ describe('Cdk', () => {
   it('does not bootstraps twice', async () => {
     const [cdk, spawnStub] = mockCdk(new FakeComponentContext());
 
-    const app1 = new App();
-    new Stack(app1, 'stack-name');
-    await cdk.deploy(app1);
+    await cdk.deploy((app) => {
+      new Stack(app, 'stack-name');
+    });
     // Deploy again, but with a different stack
-    const app2 = new App();
-    const stack = new Stack(app2, 'stack-name');
-    new Bucket(stack, 'bucket');
-    await cdk.deploy(app2);
+    await cdk.deploy((app) => {
+      const stack = new Stack(app, 'stack-name');
+      new Bucket(stack, 'bucket');
+    });
 
     expect(spawnStub.callCount).to.equal(3);
     expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');
@@ -69,9 +67,10 @@ describe('Cdk', () => {
       return 0;
     });
 
-    const app = new App();
-    new Stack(app, 'stack-name');
-    await Promise.all([cdkA.deploy(app), cdkB.deploy(app)]);
+    await Promise.all([
+      cdkA.deploy((app) => new Stack(app, 'stack-name')),
+      cdkB.deploy((app) => new Stack(app, 'stack-name')),
+    ]);
 
     expect(raceCondition).to.be.equal(false);
     // Also make sure that both components actually ran `cdk bootstrap`
@@ -84,13 +83,9 @@ describe('Cdk', () => {
   it('skips deploying unchanged stacks', async () => {
     const [cdk, spawnStub] = mockCdk(new FakeComponentContext());
 
-    const app1 = new App();
-    new Stack(app1, 'stack-name');
-    await cdk.deploy(app1);
+    await cdk.deploy((app) => new Stack(app, 'stack-name'));
     // Deploy the same stack again
-    const app2 = new App();
-    new Stack(app2, 'stack-name');
-    await cdk.deploy(app2);
+    await cdk.deploy((app) => new Stack(app, 'stack-name'));
 
     expect(spawnStub.callCount).to.equal(2);
     expect(spawnStub.getCall(0).args[1][1]).to.equal('bootstrap');

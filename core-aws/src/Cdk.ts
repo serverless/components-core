@@ -9,7 +9,7 @@ import uniGlobal from 'uni-global';
 
 export default class Cdk {
   private readonly toolkitStackName = 'serverless-cdk-toolkit';
-  public readonly artifactDirectory: string;
+  protected artifactDirectory: string;
 
   constructor(
     private readonly context: ComponentContext,
@@ -22,7 +22,10 @@ export default class Cdk {
   /**
    * @return Whether changes were deployed.
    */
-  async deploy(app: App): Promise<boolean> {
+  async deploy(appInitializer: (app: App) => void): Promise<boolean> {
+    const app = this.createCdkApp();
+    appInitializer(app);
+
     await this.bootstrapCdk();
 
     this.context.logVerbose(`Packaging ${this.stackName}`);
@@ -37,16 +40,9 @@ export default class Cdk {
     this.context.logVerbose(`Deploying ${this.stackName}`);
     await this.execCdk([
       'deploy',
-      /**
-       * The `:` is a shell "no-op" command. The `--app` arg tells CDK which command to run
-       * to package the application. Since we package the app ourselves above (via `synth()`),
-       * the artifacts exist already. The CDK can directly take these artifacts and deploy.
-       */
+      // Skip synthesis since we package the app ourselves above (via `synth()`)
+      // The CDK can directly take these artifacts and deploy.
       '--app',
-      ':',
-      '--toolkit-stack-name',
-      this.toolkitStackName,
-      '--output',
       this.artifactDirectory,
       // We don't want the CDK to interactively ask for approval for sensitive changes.
       '--require-approval',
@@ -63,7 +59,7 @@ export default class Cdk {
     return true;
   }
 
-  async remove(app: App): Promise<void> {
+  async remove(appInitializer: (app: App) => void): Promise<void> {
     if (!this.context.state.cdk?.cloudFormationTemplateHash) {
       this.context.logVerbose(`${this.stackName} was not deployed, nothing to remove`);
       return;
@@ -72,22 +68,17 @@ export default class Cdk {
     await this.bootstrapCdk();
 
     this.context.logVerbose(`Preparing ${this.stackName}`);
+    const app = this.createCdkApp();
+    appInitializer(app);
     app.synth().getStackByName(this.stackName);
 
     this.context.logVerbose(`Removing ${this.stackName}`);
     await this.execCdk([
       'destroy',
       '--force',
-      /**
-       * The `:` is a shell "no-op" command. The `--app` arg tells CDK which command to run
-       * to package the application. Since we package the app ourselves above (via `synth()`),
-       * the artifacts exist already. The CDK can directly take these artifacts and deploy.
-       */
+      // Skip synthesis since we package the app ourselves above (via `synth()`)
+      // The CDK can directly take these artifacts and deploy.
       '--app',
-      ':',
-      '--toolkit-stack-name',
-      this.toolkitStackName,
-      '--output',
       this.artifactDirectory,
       // We don't want the CDK to interactively ask for approval for sensitive changes.
       '--require-approval',
@@ -203,6 +194,17 @@ export default class Cdk {
     }
     this.context.state.cdk.cdkBootstrapped = true;
     await this.context.save();
+  }
+
+  protected createCdkApp() {
+    return new App({
+      outdir: this.artifactDirectory,
+      context: {
+        // We need to set this option so that the CDK uses our
+        // bootstrap stack
+        '@aws-cdk/core:bootstrapQualifier': 'serverless',
+      },
+    });
   }
 
   private computeStackTemplateHash(stackTemplate: string): string {
