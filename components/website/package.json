@@ -1,6 +1,6 @@
 {
   "name": "@serverless-components/website",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "author": "serverless.com",
   "license": "MIT",
@@ -10,12 +10,12 @@
     "test": "ts-mocha test/**/*.test.ts"
   },
   "peerDependencies": {
-    "@serverless-components/core": "^0.0.1"
+    "@serverless-components/core": "^0.1.0"
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "^3.81.0",
     "@aws-sdk/client-s3": "^3.81.0",
-    "@serverless-components/core-aws": "^0.0.2",
+    "@serverless-components/core-aws": "^0.1.0",
     "aws-cdk-lib": "^2.22.0",
     "constructs": "^10.0.77",
     "fs-extra": "^10.1.0",
