@@ -1,11 +1,11 @@
 import * as crypto from 'crypto';
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
-import * as childProcess from 'child_process';
 import { App } from 'aws-cdk-lib';
 import { ComponentContext } from '@serverless-components/core';
 import AsyncLock from 'async-lock';
 import uniGlobal from 'uni-global';
+import spawn from 'cross-spawn';
 
 export default class Cdk {
   private readonly toolkitStackName = 'serverless-cdk-toolkit';
@@ -222,7 +222,7 @@ export default class Cdk {
 
     this.context.logVerbose(`Running "cdk ${args.join(' ')}"`);
     return new Promise((resolve, reject) => {
-      const child = childProcess.spawn(node, [cdkCliPath, ...args], {
+      const child = spawn(node, [cdkCliPath, ...args], {
         env: {
           ...process.env,
           CDK_DISABLE_VERSION_CHECK: '1',

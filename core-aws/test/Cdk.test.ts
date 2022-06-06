@@ -120,7 +120,7 @@ function mockCdk(
     };
   });
   const MockedCdk = proxyquire('../src/Cdk', {
-    child_process: { spawn: spawnStub },
+    'cross-spawn': spawnStub,
   }).default;
 
   const cdk = new MockedCdk(componentContext, 'stack-name', {
