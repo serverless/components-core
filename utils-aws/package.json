@@ -4,6 +4,9 @@
   "main": "src/index.js",
   "author": "serverless.com",
   "license": "MIT",
+  "scripts": {
+    "test": "mocha \"test/**/*.js\""
+  },
   "dependencies": {
     "@aws-sdk/client-sts": "^3.100.0",
     "@aws-sdk/credential-provider-env": "^3.78.0",
@@ -14,5 +17,21 @@
     "@aws-sdk/credential-provider-web-identity": "^3.78.0",
     "@aws-sdk/property-provider": "^3.78.0",
     "@aws-sdk/shared-ini-file-loader": "^3.80.0"
+  },
+  "devDependencies": {
+    "@serverless/test": "^11.0.0",
+    "chai": "^4.3.6",
+    "fs-extra": "^10.1.0",
+    "mocha": "^10.0.0",
+    "process-utils": "^4.0.0"
+  },
+  "mocha": {
+    "require": [
+      "@serverless/test/setup/patch",
+      "@serverless/test/setup/mock-homedir",
+      "@serverless/test/setup/mock-cwd",
+      "@serverless/test/setup/restore-env"
+    ],
+    "timeout": 10000
   }
 }
